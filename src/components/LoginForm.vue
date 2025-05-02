@@ -13,6 +13,7 @@
       <button type="submit" :disabled="authStore.loading">
         {{ authStore.loading ? 'Iniciando...' : 'Iniciar Sesión' }}
       </button>
+      <button @click="$emit('show-register')" class="link-button">Sign up</button>
       <p v-if="authStore.authError" class="error-message">
         Error: {{ authStore.authError }}
       </p>
@@ -24,12 +25,12 @@
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Importa tu store
 
+const emit = defineEmits(['show-register']);
 // Variables locales para los inputs del formulario
 const email = ref('');
 const password = ref('');
-
-// Obtén la instancia del store
 const authStore = useAuthStore();
+
 
 // Función para manejar el envío del formulario
 const handleLogin = async () => {
@@ -63,14 +64,16 @@ const handleLogin = async () => {
 .login-form input {
   width: 100%;
   padding: 0.5rem;
-  box-sizing: border-box; /* Asegura que el padding no aumente el tamaño total */
+  box-sizing: border-box;
 }
 .login-form button {
   padding: 0.75rem 1.5rem;
-  background-color: #42b983; /* Color Vue */
+  background-color: #42b983;
   color: white;
   border: none;
   border-radius: 4px;
+  display: block;
+  margin: 1rem auto;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }

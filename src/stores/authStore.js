@@ -16,7 +16,40 @@ export const useAuthStore = defineStore("auth", () => {
   // Usamos computed() para getters derivados del estado
   const isLoggedIn = computed(() => !!user.value); // Verdadero si hay un usuario
 
-  // --- Actions ---
+  // signUp ---
+      async function signUp(credentials) {
+        loading.value = true
+        authError.value = null // Limpiar errores previos
+        try {
+            // Llama a Supabase para registrar un nuevo usuario
+            const { data, error } = await supabase.auth.signUp({
+                email: credentials.email,
+                password: credentials.password,
+                // Opcional: puedes pasar datos adicionales aquí si configuras metadatos de usuario
+                // options: {
+                //   data: { username: credentials.username }
+                // }
+            })
+
+            if (error) throw error // Si hay error, lánzalo
+
+            console.log('Sign up successful:', data)
+            // IMPORTANTE: Por defecto, Supabase envía un email de confirmación.
+            // El usuario no estará logueado (data.session será null) hasta que confirme.
+            // Podrías querer guardar data.user aquí si necesitas mostrar algo específico
+            // user.value = data.user; // Opcional, depende de tu flujo
+
+            // Puedes devolver un valor para indicar éxito si lo necesitas en el componente
+            return true;
+
+        } catch (error) {
+            console.error('Sign up error:', error.message)
+            authError.value = error.message // Guarda el mensaje de error
+             return false; // Indica fallo
+        } finally {
+            loading.value = false // Termina el estado de carga
+        }
+    }
 
   // iniciar sesión
   async function login(credentials) {
@@ -117,5 +150,6 @@ export const useAuthStore = defineStore("auth", () => {
     logout,
     checkAuth,
     initializeAuthStateListener,
+    signUp
   };
 });

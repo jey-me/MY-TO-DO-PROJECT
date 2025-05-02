@@ -1,59 +1,83 @@
 <template>
+  <div>
+  </div>
   <div id="app-container">
-    <h1>To-Do-List</h1>
+    <h1>Mi Aplicación To-Do</h1>
 
-    <div v-if="authStore.loading">Cargando sesión...</div>
+    <div v-if="authStore.loading && !authStore.isLoggedIn">Cargando sesión...</div>
     <div v-else>
         <div v-if="authStore.isLoggedIn">
           <p>Bienvenido, {{ authStore.user?.email }}!</p>
           <button @click="handleLogout" :disabled="authStore.loading">
             {{ authStore.loading ? 'Cerrando sesión...' : 'Cerrar Sesión' }}
           </button>
-          <hr>
-          <h2>Tu Lista de Tareas (Próximamente)</h2>
-        </div>
+          <h2>Tu Lista de Tareas</h2>
+          <form>
+            <input type="text"><button>add</button>
+          </form>
+          <table>
+  <thead>
+    <tr>
+      <th>Task</th>
+      <th>Status</th>
+      <th>Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Complete the project this is a very long task to write. Deserunt, fugiat tenetur qui asperiores quos earum ut eum?</td>
+      <td><button @click="handleStatusChange">In progress</button></td>
+      <td><button @click="handleDelete">Delete</button></td>
+    </tr>
+  </tbody>
+</table>
 
-        <LoginForm v-else />
+
+  </div>
+        <div v-else>
+          <RegisterForm v-if="showRegister" @show-login="showRegister = false" />
+          <LoginForm v-else @show-register="showRegister = true" />
+        </div>
     </div>
 
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue'; // Importa ref
 import { useAuthStore } from '@/stores/authStore';
-import LoginForm from '@/components/LoginForm.vue'; // Importa tu componente de login
+import LoginForm from '@/components/LoginForm.vue';
+import RegisterForm from '@/components/RegisterForm.vue'; // Importa RegisterForm
 
 const authStore = useAuthStore();
 
-// Función para manejar el logout
+// Nuevo estado para controlar qué formulario mostrar
+const showRegister = ref(false);
+
 const handleLogout = async () => {
   await authStore.logout();
+  showRegister.value = false; // Al cerrar sesión, mostrar el login por defecto
 };
 
-// Al montar la aplicación, inicializa el listener de estado de autenticación
-// Esto también llamará inmediatamente al callback con el estado actual,
-// por lo que reemplaza la necesidad de llamar a checkAuth() por separado si se usa.
 onMounted(() => {
   authStore.initializeAuthStateListener();
-  // Si prefieres no usar el listener y solo comprobar al inicio:
-  // authStore.checkAuth();
 });
+
 </script>
 
 <style>
-/* Puedes añadir estilos globales aquí o en src/style.css */
-#app-container {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+
+.link-button {
+    background: none;
+    border: none;
+    color: #42b983;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font-size: inherit; /* Heredar tamaño de fuente del párrafo */
+    display: inline; /* Mostrar en línea con el texto */
 }
-button {
-   margin: 5px;
-   padding: 0.5rem 1rem;
-   cursor: pointer;
+.link-button:hover {
+    color: #30a86e;
 }
 </style>
