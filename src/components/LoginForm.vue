@@ -21,24 +21,25 @@
     </div>
 </template>
 
+
 <script setup>
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore'; // Importa tu store
 
+
 const emit = defineEmits(['show-register']);
-// Variables locales para los inputs del formulario
+
 const email = ref('');
 const password = ref('');
 const authStore = useAuthStore();
 
 
-// Función para manejar el envío del formulario
+
 const handleLogin = async () => {
   // Llama a la acción 'login' del store con las credenciales
   await authStore.login({ email: email.value, password: password.value });
 
-  // Opcional: Limpiar el formulario si el login fue exitoso
-  // (Aunque normalmente se redirige al usuario, así que no es estrictamente necesario)
+  // Limpiar el formulario 
   // if (authStore.isLoggedIn) {
   //   email.value = '';
   //   password.value = '';

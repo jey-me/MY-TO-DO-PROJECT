@@ -1,4 +1,3 @@
-// src/stores/authStore.js
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { supabase } from "@/supabaseClient";
