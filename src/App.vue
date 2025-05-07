@@ -1,19 +1,20 @@
 <template>
-  <div></div>
-  <div id="app-container">
-    <h1>Mi Aplicación To-Do</h1>
+
+
+
 
     <div v-if="authStore.loading && !authStore.isLoggedIn">
       Cargando sesión...
     </div>
     <div v-else>
       <div v-if="authStore.isLoggedIn">
-        <nav>
-          <p>Bienvenido, {{ authStore.user?.email }}!</p>
-          <button @click="handleLogout" :disabled="authStore.loading">
-            {{ authStore.loading ? "Cerrando sesión..." : "Cerrar Sesión" }}
-          </button>
-        </nav>
+
+          <NavBar
+            :userEmail="authStore.user?.email"
+            :loading="authStore.loading"
+            :handleLogout="handleLogout"
+          />
+
 
         <main>
           <TaskManager />
@@ -24,7 +25,7 @@
         <LoginForm v-else @show-register="showRegister = true" />
       </div>
     </div>
-  </div>
+
 </template>
 
 <script setup>
@@ -33,10 +34,9 @@ import { useAuthStore } from "@/stores/authStore";
 import LoginForm from "@/components/LoginForm.vue";
 import RegisterForm from "@/components/RegisterForm.vue"; // Importa RegisterForm
 import TaskManager from "@/components/TaskManager.vue";
+import NavBar from '@/components/NavBar.vue';
 
 const authStore = useAuthStore();
-
-// Nuevo estado para controlar qué formulario mostrar
 const showRegister = ref(false);
 
 const handleLogout = async () => {

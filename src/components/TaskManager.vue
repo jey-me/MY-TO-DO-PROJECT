@@ -1,14 +1,18 @@
 <template>
-  <div>
-    <h2>Gestor de Tareas</h2>
-    <input
+  <main>
+    <h2>To-do-list</h2>
+    <div class="addNewTask">
+      <input
       v-model="newTask"
       placeholder="Añadir nueva tarea"
       @keyup.enter="addTask"
+    
     />
-    <button @click="addTask">Añadir Tarea</button>
+    <button @click="addTask">Add task</button>
+    </div>
+    
 
-    <table>
+    <table v-if="tasks.length > 0">
       <thead>
         <tr>
           <th>Tarea</th>
@@ -36,7 +40,7 @@
         </tr>
       </tbody>
     </table>
-  </div>
+  </main>
 </template>
 
 <script>
@@ -73,4 +77,8 @@ export default {
 </script>
 
 <style scoped>
+.addNewTask {
+  display: flex;
+
+}
 </style>
