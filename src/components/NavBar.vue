@@ -1,26 +1,32 @@
 <template>
     <nav>
       <p>Bienvenido, {{ userEmail }}!</p>
-      <button @click="handleLogout" :disabled="loading">
+      <button @click="onLogout" :disabled="loading">
         {{ loading ? "Cerrando sesión..." : "Cerrar Sesión" }}
       </button>
     </nav>
   </template>
   
   <script setup>
-  const props = defineProps({
-    userEmail: String,
-    loading: Boolean,
-    handleLogout: Function
-  });
+const props = defineProps({
+   userEmail: String,
+   loading: Boolean
+ });
+ // definimos el evento
+ const emit = defineEmits(['logout']);
+ // emitimos al hacer click
+ function onLogout() {
+   emit('logout');
+ }
   </script>
   
   <style scoped>
   nav {
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 80 vw;
+    
     padding: 10px; /* Espaciado interno */
     opacity: 70%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);    
