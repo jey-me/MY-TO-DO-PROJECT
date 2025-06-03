@@ -1,19 +1,14 @@
-// src/stores/authStore.js
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { supabase } from "@/supabaseClient";
 
 export const useAuthStore = defineStore("auth", () => {
-  // --- State ---
   const user = ref(null);
   const session = ref(null);
   const loading = ref(true);
   const authError = ref(null);
 
-  // --- Getters ---
   const isLoggedIn = computed(() => !!user.value);
-
-  // --- Actions ---
 
   // Registro de usuario
   async function signUp({ email, password }) {
@@ -43,7 +38,8 @@ export const useAuthStore = defineStore("auth", () => {
       return true;
     } catch (err) {
       console.error("Error en signUp:", err.message);
-      authError.value = err?.message || "Error desconocido al registrar el usuario.";
+      authError.value =
+        err?.message || "Error desconocido al registrar el usuario.";
       return false;
     } finally {
       loading.value = false;
@@ -64,7 +60,8 @@ export const useAuthStore = defineStore("auth", () => {
       session.value = data.session;
       return true;
     } catch (err) {
-      authError.value = err?.message || "Error desconocido al registrar el usuario.";
+      authError.value =
+        err?.message || "Error desconocido al registrar el usuario.";
       user.value = null;
       session.value = null;
       return false;
@@ -83,7 +80,8 @@ export const useAuthStore = defineStore("auth", () => {
       user.value = null;
       session.value = null;
     } catch (err) {
-      authError.value = err?.message || "Error desconocido al registrar el usuario.";
+      authError.value =
+        err?.message || "Error desconocido al registrar el usuario.";
     } finally {
       loading.value = false;
     }

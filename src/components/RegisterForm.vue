@@ -16,14 +16,9 @@
           minlength="6"
         />
       </div>
-      <button
-        type="submit"
-        :disabled="authStore.loading"
-      >
-        {{ authStore.loading ? 'Registrando...' : 'Registrarse' }}
+      <button type="submit" :disabled="authStore.loading">
+        {{ authStore.loading ? "Registrando..." : "Registrarse" }}
       </button>
-
-
 
       <!-- Mensaje genérico para otros errores -->
       <p v-if="authStore.authError" class="error-message">
@@ -35,31 +30,30 @@
         ¡Registro enviado! Revisa tu email para confirmar tu cuenta.
       </p>
     </form>
-    
-          <!-- email ya registrado -->
-  <p v-if="authStore.authError === duplicateMessage" class="error-message">
+
+    <!-- email ya registrado -->
+    <p v-if="authStore.authError === duplicateMessage" class="error-message">
       {{ duplicateMessage }}
       <br />
       <router-link :to="{ name: 'Login' }" class="link-button">
         Iniciar Sesión ahora
       </router-link>
     </p>
-
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'vue-router';
+import { ref } from "vue";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
 
-const email = ref('');
-const password = ref('');
+const email = ref("");
+const password = ref("");
 const registrationComplete = ref(false);
 const authStore = useAuthStore();
 const router = useRouter();
 
-const duplicateMessage = 'Este email ya está registrado.';
+const duplicateMessage = "Este email ya está registrado.";
 
 async function handleRegister() {
   registrationComplete.value = false;
@@ -73,7 +67,7 @@ async function handleRegister() {
   if (success) {
     registrationComplete.value = true;
   } else if (authStore.authError === duplicateMessage) {
-    router.push({ name: 'Login' });
+    router.push({ name: "Login" });
   }
 }
 </script>
@@ -100,15 +94,15 @@ async function handleRegister() {
 }
 .register-form button {
   padding: 0.75rem 1.5rem;
-  background-color: #41b883; /* Un verde ligeramente diferente para variar */
+  background-color: #41b883;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  margin-top: 0.5rem; /* Añadido margen superior */
-  display: block; /* Hacer que el botón ocupe el ancho si se desea */
-  width: 100%; /* Hacer que el botón ocupe el ancho */
+  margin-top: 0.5rem;
+  display: block;
+  width: 100%;
 }
 .register-form button:disabled {
   background-color: #ccc;
@@ -133,8 +127,8 @@ async function handleRegister() {
   text-decoration: underline;
   cursor: pointer;
   padding: 0;
-  font-size: inherit; /* Heredar tamaño de fuente del párrafo */
-  display: inline; /* Mostrar en línea con el texto */
+  font-size: inherit;
+  display: inline;
 }
 .link-button:hover {
   color: #30a86e;

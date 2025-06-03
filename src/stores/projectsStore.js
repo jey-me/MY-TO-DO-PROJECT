@@ -1,19 +1,17 @@
-// src/stores/todoStore.js (o projectStore.js)
+
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { supabase } from '@/supabaseClient'
 import { useAuthStore } from './authStore'
 
-// Considera cambiar 'todos' por 'projects' si renombras el archivo
+
 export const useTodoStore = defineStore('projects', () => {
-  const todos = ref([]) // Representará tus "projects" o tareas
+  const todos = ref([]) 
   const loading = ref(false)
   const error = ref(null)
   const authStore = useAuthStore()
 
-  // --- ACCIONES ---
-
-  // 1. Obtener Tareas/Proyectos
+  // Mostrar tareas
   async function fetchTodos() {
     if (!authStore.user) {
       todos.value = []
@@ -23,10 +21,10 @@ export const useTodoStore = defineStore('projects', () => {
     error.value = null
     try {
       const { data, error: supabaseError } = await supabase
-        .from('projects') // <<< Tu nombre de tabla
-        .select('*')      // Puedes ser más específico: 'id, created_at, title, task, complete, userid'
-        .eq('userid', authStore.user.id) // <<< Tu columna de usuario
-        .order('created_at', { ascending: false }) // <<< Tu columna de fecha
+        .from('projects')
+        .select('*')    
+        .eq('userid', authStore.user.id)
+        .order('created_at', { ascending: false }) 
 
       if (supabaseError) throw supabaseError
       todos.value = data || []
@@ -38,25 +36,27 @@ export const useTodoStore = defineStore('projects', () => {
     }
   }
 
-  // 2. Agregar Tarea/Proyecto
-  // El parámetro taskText será el contenido de tu columna 'task'
-  async function addTodo(taskText, projectTitle = null) { // projectTitle es opcional
+// --- ACCIONES ---
+
+  // Agregar Tarea
+
+  async function addTodo(taskText, projectTitle = null) { 
     if (!authStore.user || !taskText.trim()) return false
 
     loading.value = true
     error.value = null
     try {
       const newProjectData = {
-        task: taskText.trim(),          // <<< Tu columna para el texto de la tarea
-        userid: authStore.user.id,      // <<< Tu columna de usuario
-        complete: false,                // <<< Tu columna de completado
+        task: taskText.trim(),          
+        userid: authStore.user.id,      
+        complete: false,                
       }
       if (projectTitle && projectTitle.trim() !== '') {
-        newProjectData.title = projectTitle.trim(); // <<< Tu columna de título (opcional)
+        newProjectData.title = projectTitle.trim(); 
       }
 
       const { data, error: supabaseError } = await supabase
-        .from('projects') // <<< Tu nombre de tabla
+        .from('projects') 
         .insert(newProjectData)
         .select()
 
@@ -75,23 +75,23 @@ export const useTodoStore = defineStore('projects', () => {
     }
   }
 
-  // 3. Marcar/Desmarcar Tarea/Proyecto
+  // Marcar tarea como completada
   async function toggleTodoStatus(todoId, currentStatus) {
     loading.value = true
     error.value = null
     try {
       const { data, error: supabaseError } = await supabase
-        .from('projects') // <<< Tu nombre de tabla
-        .update({ complete: !currentStatus }) // <<< Tu columna de completado
+        .from('projects') 
+        .update({ complete: !currentStatus }) 
         .eq('id', todoId)
-        .select('id, complete') // Solo necesitamos el ID y el estado actualizado
+        .select('id, complete') 
 
       if (supabaseError) throw supabaseError
 
       if (data && data.length > 0) {
         const index = todos.value.findIndex(t => t.id === todoId)
         if (index !== -1) {
-          todos.value[index].complete = data[0].complete // <<< Actualiza tu columna
+          todos.value[index].complete = data[0].complete
         }
       }
     } catch (e) {
@@ -102,8 +102,7 @@ export const useTodoStore = defineStore('projects', () => {
     }
   }
 
-  // 4. Modificar Texto de Tarea/Proyecto
-  // newText actualizará la columna 'task'
+  // Modificar Tarea
   async function updateTodoText(todoId, newText) {
     if (!newText.trim()) return
 
@@ -111,17 +110,17 @@ export const useTodoStore = defineStore('projects', () => {
     error.value = null
     try {
       const { data, error: supabaseError } = await supabase
-        .from('projects') // <<< Tu nombre de tabla
-        .update({ task: newText.trim() }) // <<< Tu columna de texto de tarea
+        .from('projects') 
+        .update({ task: newText.trim() }) 
         .eq('id', todoId)
-        .select('id, task') // Solo necesitamos el ID y el texto actualizado
+        .select('id, task')
 
       if (supabaseError) throw supabaseError
 
       if (data && data.length > 0) {
         const index = todos.value.findIndex(t => t.id === todoId)
         if (index !== -1) {
-          todos.value[index].task = data[0].task // <<< Actualiza tu columna
+          todos.value[index].task = data[0].task
         }
       }
     } catch (e) {
@@ -132,40 +131,13 @@ export const useTodoStore = defineStore('projects', () => {
     }
   }
   
-  // (Opcional) Modificar Título del Proyecto
-  async function updateTodoTitle(todoId, newTitle) {
-    if (!newTitle.trim()) return;
-    loading.value = true;
-    error.value = null;
-    try {
-      const { data, error: supabaseError } = await supabase
-        .from('projects')
-        .update({ title: newTitle.trim() }) // <<< Tu columna de título
-        .eq('id', todoId)
-        .select('id, title');
-      if (supabaseError) throw supabaseError;
-      if (data && data.length > 0) {
-        const index = todos.value.findIndex(t => t.id === todoId);
-        if (index !== -1) {
-          todos.value[index].title = data[0].title;
-        }
-      }
-    } catch (e) {
-      error.value = e.message;
-      console.error('Error updating project title:', e.message);
-    } finally {
-      loading.value = false;
-    }
-  }
-
-
-  // 5. Eliminar Tarea/Proyecto
+  // Eliminar Tarea
   async function deleteTodo(todoId) {
     loading.value = true
     error.value = null
     try {
       const { error: supabaseError } = await supabase
-        .from('projects') // <<< Tu nombre de tabla
+        .from('projects') 
         .delete()
         .eq('id', todoId)
 
@@ -192,7 +164,6 @@ export const useTodoStore = defineStore('projects', () => {
     addTodo,
     toggleTodoStatus,
     updateTodoText,
-    updateTodoTitle, // Si necesitas actualizar el título también
     deleteTodo,
     clearTodos,
   }

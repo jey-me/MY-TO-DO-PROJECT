@@ -1,10 +1,7 @@
-<!-- src/components/TaskManager.vue -->
 <template>
   <main class="task-manager">
-
     <h1>Mi Lista de Tareas</h1>
 
-   
     <section class="add-new-task option-b">
       <div class="grid-input">
         <input
@@ -17,13 +14,15 @@
           class="btn-add"
           @click="handleAddTask"
           :disabled="projectStore.loading || !newTaskText.trim()"
-        >➕</button>
+        >
+          ➕
+        </button>
       </div>
       <p v-if="addTaskError" class="error-message">{{ addTaskError }}</p>
     </section>
 
     <!-- Lista de tareas -->
- <ul v-if="projectStore.todos.length" class="task-list">
+    <ul v-if="projectStore.todos.length" class="task-list">
       <li
         v-for="item in projectStore.todos"
         :key="item.id"
@@ -37,9 +36,13 @@
             <button
               @click="projectStore.toggleTodoStatus(item.id, item.complete)"
               class="action-btn"
-            >{{ item.complete ? '↩️' : '✅' }}</button>
+            >
+              {{ item.complete ? "↩️" : "✅" }}
+            </button>
             <button @click="startEdit(item)" class="action-btn">✏️</button>
-            <button @click="handleDeleteTask(item.id)" class="action-btn">❌</button>
+            <button @click="handleDeleteTask(item.id)" class="action-btn">
+              ❌
+            </button>
           </div>
         </template>
         <template v-else>
@@ -59,76 +62,92 @@
       </li>
     </ul>
 
-    <p v-if="!projectStore.loading && !projectStore.todos.length && !projectStore.error" class="no-tasks">
+    <p
+      v-if="
+        !projectStore.loading &&
+        !projectStore.todos.length &&
+        !projectStore.error
+      "
+      class="no-tasks"
+    >
       ¡No hay tareas pendientes!
     </p>
-    <div v-if="projectStore.loading" class="loading-message">Cargando tareas...</div>
-    <div v-if="projectStore.error" class="error-message">Error: {{ projectStore.error }}</div>
+    <div v-if="projectStore.loading" class="loading-message">
+      Cargando tareas...
+    </div>
+    <div v-if="projectStore.error" class="error-message">
+      Error: {{ projectStore.error }}
+    </div>
   </main>
 </template>
 
 <script setup>
-import { ref, watchEffect, nextTick } from 'vue'
-import { useTodoStore } from '@/stores/projectsStore'
-import { useAuthStore } from '@/stores/authStore'
+import { ref, watch, nextTick } from "vue";
+import { useTodoStore } from "@/stores/projectsStore";
+import { useAuthStore } from "@/stores/authStore";
 
-const projectStore = useTodoStore()
-const authStore = useAuthStore()
+const projectStore = useTodoStore();
+const authStore = useAuthStore();
 
-const newTaskText = ref('')
-const addTaskError = ref(null)
+const newTaskText = ref("");
+const addTaskError = ref(null);
 
-watchEffect(() => {
-  if (authStore.user) projectStore.fetchTodos()
-  else projectStore.clearTodos()
-})
+watch(
+  () => authStore.user,
+  (user) => {
+    if (user) projectStore.fetchTodos();
+    else projectStore.clearTodos();
+  },
+  { immediate: true }
+);
 
 async function handleAddTask() {
-  addTaskError.value = null
+  addTaskError.value = null;
   if (!newTaskText.value.trim()) {
-    addTaskError.value = 'La descripción de la tarea no puede estar vacía.'
-    return
+    addTaskError.value = "La descripción de la tarea no puede estar vacía.";
+    return;
   }
-  const success = await projectStore.addTodo(newTaskText.value)
-  if (success) newTaskText.value = ''
-  else addTaskError.value = projectStore.error || 'Error al agregar la tarea.'
+  const success = await projectStore.addTodo(newTaskText.value);
+  if (success) newTaskText.value = "";
+  else addTaskError.value = projectStore.error || "Error al agregar la tarea.";
 }
 
 function startEdit(item) {
-  projectStore.todos.forEach(t => (t.editing = false))
-  item.editing = true
-  item.editableTaskText = item.task
-  nextTick(() => autoResize())
+  projectStore.todos.forEach((t) => (t.editing = false));
+  item.editing = true;
+  item.editableTaskText = item.task;
+  nextTick(() => autoResize());
 }
 
 function autoResize(event) {
-  const textarea = event?.target || document.querySelector('.task-edit textarea')
+  const textarea =
+    event?.target || document.querySelector(".task-edit textarea");
   if (textarea) {
-    textarea.style.height = 'auto'
-    textarea.style.height = textarea.scrollHeight + 'px'
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
   }
 }
 
 function cancelEdit(item) {
-  item.editing = false
+  item.editing = false;
 }
 
 async function saveEdit(item) {
   if (!item.editableTaskText.trim()) {
-    alert('El texto no puede estar vacío.')
-    return
+    alert("El texto no puede estar vacío.");
+    return;
   }
-  await projectStore.updateTodoText(item.id, item.editableTaskText.trim())
+  await projectStore.updateTodoText(item.id, item.editableTaskText.trim());
   if (projectStore.error) {
-    alert('Error al guardar la tarea: ' + projectStore.error)
+    alert("Error al guardar la tarea: " + projectStore.error);
   } else {
-    item.task = item.editableTaskText.trim()
-    item.editing = false
+    item.task = item.editableTaskText.trim();
+    item.editing = false;
   }
 }
 
 function handleDeleteTask(id) {
-  if (confirm('¿Eliminar tarea?')) projectStore.deleteTodo(id)
+  if (confirm("¿Eliminar tarea?")) projectStore.deleteTodo(id);
 }
 </script>
 
@@ -252,6 +271,5 @@ h1 {
   .edit-input {
     width: 100%;
   }
-
 }
 </style>
