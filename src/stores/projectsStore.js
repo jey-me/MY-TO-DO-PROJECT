@@ -1,12 +1,11 @@
-// src/stores/todoStore.js (o projectStore.js)
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { supabase } from '@/supabaseClient'
 import { useAuthStore } from './authStore'
 
-// Considera cambiar 'todos' por 'projects' si renombras el archivo
-export const useTodoStore = defineStore('projects', () => {
-  const todos = ref([]) // Representará tus "projects" o tareas
+
+export const useProjectStore = defineStore('projects', () => {
+  const porjects = ref([])
   const loading = ref(false)
   const error = ref(null)
   const authStore = useAuthStore()
@@ -16,20 +15,20 @@ export const useTodoStore = defineStore('projects', () => {
   // 1. Obtener Tareas/Proyectos
   async function fetchTodos() {
     if (!authStore.user) {
-      todos.value = []
+      projects.value = []
       return
     }
     loading.value = true
     error.value = null
     try {
       const { data, error: supabaseError } = await supabase
-        .from('projects') // <<< Tu nombre de tabla
-        .select('*')      // Puedes ser más específico: 'id, created_at, title, task, complete, userid'
-        .eq('userid', authStore.user.id) // <<< Tu columna de usuario
-        .order('created_at', { ascending: false }) // <<< Tu columna de fecha
+        .from('projects')
+        .select('*')      // 'id, created_at, title, task, complete, userid'
+        .eq('userid', authStore.user.id)
+        .order('created_at', { ascending: false })
 
       if (supabaseError) throw supabaseError
-      todos.value = data || []
+      projects.value = data || []
     } catch (e) {
       error.value = e.message
       console.error('Error fetching projects:', e.message)
@@ -63,7 +62,7 @@ export const useTodoStore = defineStore('projects', () => {
       if (supabaseError) throw supabaseError
 
       if (data && data.length > 0) {
-        todos.value.unshift(data[0])
+        projects.value.unshift(data[0])
       }
       return true
     } catch (e) {
@@ -89,9 +88,9 @@ export const useTodoStore = defineStore('projects', () => {
       if (supabaseError) throw supabaseError
 
       if (data && data.length > 0) {
-        const index = todos.value.findIndex(t => t.id === todoId)
+        const index = projects.value.findIndex(t => t.id === todoId)
         if (index !== -1) {
-          todos.value[index].complete = data[0].complete // <<< Actualiza tu columna
+          projects.value[index].complete = data[0].complete // <<< Actualiza tu columna
         }
       }
     } catch (e) {
@@ -119,9 +118,9 @@ export const useTodoStore = defineStore('projects', () => {
       if (supabaseError) throw supabaseError
 
       if (data && data.length > 0) {
-        const index = todos.value.findIndex(t => t.id === todoId)
+        const index = projects.value.findIndex(t => t.id === todoId)
         if (index !== -1) {
-          todos.value[index].task = data[0].task // <<< Actualiza tu columna
+          projects.value[index].task = data[0].task // <<< Actualiza tu columna
         }
       }
     } catch (e) {
@@ -145,9 +144,9 @@ export const useTodoStore = defineStore('projects', () => {
         .select('id, title');
       if (supabaseError) throw supabaseError;
       if (data && data.length > 0) {
-        const index = todos.value.findIndex(t => t.id === todoId);
+        const index = projects.value.findIndex(t => t.id === todoId);
         if (index !== -1) {
-          todos.value[index].title = data[0].title;
+          projects.value[index].title = data[0].title;
         }
       }
     } catch (e) {
@@ -171,7 +170,7 @@ export const useTodoStore = defineStore('projects', () => {
 
       if (supabaseError) throw supabaseError
 
-      todos.value = todos.value.filter(t => t.id !== todoId)
+      projects.value = projects.value.filter(t => t.id !== todoId)
     } catch (e) {
       error.value = e.message
       console.error('Error deleting project:', e.message)
@@ -181,18 +180,18 @@ export const useTodoStore = defineStore('projects', () => {
   }
 
   function clearTodos() {
-    todos.value = []
+    projects.value = []
   }
 
   return {
-    todos,
+    projects,
     loading,
     error,
     fetchTodos,
     addTodo,
     toggleTodoStatus,
     updateTodoText,
-    updateTodoTitle, // Si necesitas actualizar el título también
+    updateTodoTitle,
     deleteTodo,
     clearTodos,
   }

@@ -16,7 +16,6 @@ export const useAuthStore = defineStore("auth", () => {
   // --- Actions ---
 
   // Registro de usuario
-  // src/stores/authStore.js
   async function signUp({ email, password }) {
     loading.value = true;
     authError.value = null;
@@ -44,7 +43,7 @@ export const useAuthStore = defineStore("auth", () => {
       return true;
     } catch (err) {
       console.error("Error en signUp:", err.message);
-      authError.value = err.message;
+      authError.value = err?.message || "Error desconocido al registrar el usuario.";
       return false;
     } finally {
       loading.value = false;
@@ -65,7 +64,7 @@ export const useAuthStore = defineStore("auth", () => {
       session.value = data.session;
       return true;
     } catch (err) {
-      authError.value = err.message;
+      authError.value = err?.message || "Error desconocido al registrar el usuario.";
       user.value = null;
       session.value = null;
       return false;
@@ -84,7 +83,7 @@ export const useAuthStore = defineStore("auth", () => {
       user.value = null;
       session.value = null;
     } catch (err) {
-      authError.value = err.message;
+      authError.value = err?.message || "Error desconocido al registrar el usuario.";
     } finally {
       loading.value = false;
     }
