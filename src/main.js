@@ -1,11 +1,26 @@
 // src/main.js
-import { createApp } from 'vue'
-import { createPinia } from 'pinia' // Importa createPinia
-import './style.css'
-import App from './App.vue'
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+import './style.css';
+import App from './App.vue';
+import router from './router';
+import { useAuthStore } from '@/stores/authStore';
 
-const app = createApp(App)
+async function bootstrap() {
+  const app = createApp(App);
+  const pinia = createPinia();
+  app.use(pinia);
 
-app.use(createPinia()) // Usa Pinia en tu aplicación
+  // 1️⃣ Antes de tocar el router, restauramos sesión:
+  const authStore = useAuthStore();
+  await authStore.initializeAuthStateListener();
 
-app.mount('#app')
+  // 2️⃣ Ahora sí, podemos montar el router con confianza:
+  app.use(router);
+  await router.isReady();
+
+  // 3️⃣ Y finalmente arrancamos la app:
+  app.mount('#app');
+}
+
+bootstrap();

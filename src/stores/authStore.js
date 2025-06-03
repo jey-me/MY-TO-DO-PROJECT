@@ -3,153 +3,124 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { supabase } from "@/supabaseClient";
 
-// defineStore recibe un ID único y una función de configuración
 export const useAuthStore = defineStore("auth", () => {
   // --- State ---
-  // Usamos ref() para propiedades reactivas del estado
-  const user = ref(null); // Almacenará la información del usuario si está logueado
-  const session = ref(null); // Almacenará la sesión completa de Supabase
-  const loading = ref(false); // Para indicar si una operación de auth está en curso
-  const authError = ref(null); // Para almacenar mensajes de error
+  const user = ref(null);
+  const session = ref(null);
+  const loading = ref(true);
+  const authError = ref(null);
 
   // --- Getters ---
-  // Usamos computed() para getters derivados del estado
-  const isLoggedIn = computed(() => !!user.value); // Verdadero si hay un usuario
+  const isLoggedIn = computed(() => !!user.value);
 
-  // signUp ---
-      async function signUp(credentials) {
-        loading.value = true
-        authError.value = null // Limpiar errores previos
-        try {
-            // Llama a Supabase para registrar un nuevo usuario
-            const { data, error } = await supabase.auth.signUp({
-                email: credentials.email,
-                password: credentials.password,
-                // Opcional: puedes pasar datos adicionales aquí si configuras metadatos de usuario
-                // options: {
-                //   data: { username: credentials.username }
-                // }
-            })
+  // --- Actions ---
 
-            if (error) throw error // Si hay error, lánzalo
+  // Registro de usuario
+  async function signUp({ email, password }) {
+    loading.value = true;
+    authError.value = null;
 
-            console.log('Sign up successful:', data)
-            // IMPORTANTE: Por defecto, Supabase envía un email de confirmación.
-            // El usuario no estará logueado (data.session será null) hasta que confirme.
-            // Podrías querer guardar data.user aquí si necesitas mostrar algo específico
-            // user.value = data.user; // Opcional, depende de tu flujo
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password });
 
-            // Puedes devolver un valor para indicar éxito si lo necesitas en el componente
-            return true;
+      // Detectar duplicado explícito
+      if (error?.message === "User already registered") {
+        authError.value = "Este email ya está registrado.";
+        return false;
+      }
 
-        } catch (error) {
-            console.error('Sign up error:', error.message)
-            authError.value = error.message // Guarda el mensaje de error
-             return false; // Indica fallo
-        } finally {
-            loading.value = false // Termina el estado de carga
-        }
+      // Detectar "fake user" (identities vacío)
+      if (
+        !error &&
+        Array.isArray(data.user?.identities) &&
+        data.user.identities.length === 0
+      ) {
+        authError.value = "Este email ya está registrado.";
+        return false;
+      }
+
+      // Éxito auténtico
+      return true;
+    } catch (err) {
+      console.error("Error en signUp:", err.message);
+      authError.value = err?.message || "Error desconocido al registrar el usuario.";
+      return false;
+    } finally {
+      loading.value = false;
     }
+  }
 
-  // iniciar sesión
+  // Login
   async function login(credentials) {
     loading.value = true;
     authError.value = null;
     try {
-      // Llama a Supabase para iniciar sesión
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password,
       });
-      if (error) throw error; // Si hay error, lánzalo para el catch
-
-      // Si el login es exitoso, Supabase devuelve data.user y data.session
-      console.log("Login successful:", data);
+      if (error) throw error;
       user.value = data.user;
       session.value = data.session;
-    } catch (error) {
-      console.error("Login error:", error.message);
-      authError.value = error.message; // Guarda el mensaje de error
-      user.value = null; // Asegúrate de limpiar el usuario en caso de error
+      return true;
+    } catch (err) {
+      authError.value = err?.message || "Error desconocido al registrar el usuario.";
+      user.value = null;
       session.value = null;
+      return false;
     } finally {
-      loading.value = false; // Termina el estado de carga
+      loading.value = false;
     }
   }
 
-  // Cerrar sesión
+  // Logout
   async function logout() {
     loading.value = true;
     authError.value = null;
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      // Limpia el estado local
       user.value = null;
       session.value = null;
-      console.log("Logout successful");
-    } catch (error) {
-      console.error("Logout error:", error.message);
-      authError.value = error.message;
+    } catch (err) {
+      authError.value = err?.message || "Error desconocido al registrar el usuario.";
     } finally {
       loading.value = false;
     }
   }
 
-  // Acción para verificar si ya existe una sesión al cargar la app
-  // Supabase guarda la sesión en localStorage por defecto
-  async function checkAuth() {
-    loading.value = true;
+  // Inicializa listener y restaura sesión
+  async function initializeAuthStateListener() {
     try {
-      // Intenta obtener la sesión actual
       const {
         data: { session: currentSession },
         error: sessionError,
       } = await supabase.auth.getSession();
-
       if (sessionError) throw sessionError;
-
-      if (currentSession) {
-        session.value = currentSession;
-        user.value = currentSession.user;
-        console.log("Session restored:", session.value);
-      } else {
-        // Si no hay sesión, asegúrate de que el estado esté limpio
-        user.value = null;
-        session.value = null;
-      }
-    } catch (error) {
-      console.error("Error checking auth status:", error.message);
-      user.value = null;
+      session.value = currentSession;
+      user.value = currentSession?.user ?? null;
+    } catch (err) {
       session.value = null;
+      user.value = null;
     } finally {
       loading.value = false;
     }
-  }
 
-  // (MUY RECOMENDADO) Escuchar cambios de estado de autenticación de Supabase
-  function initializeAuthStateListener() {
     supabase.auth.onAuthStateChange((event, currentSession) => {
-      console.log("Supabase auth event:", event, currentSession);
-      // Actualiza el estado de Pinia según el evento de Supabase
       session.value = currentSession;
       user.value = currentSession ? currentSession.user : null;
-      loading.value = false; // Asegúrate de que loading se desactive
     });
   }
 
-  // --- Exportar ---
-  // Devuelve las propiedades y métodos que quieres exponer
   return {
     user,
     session,
     loading,
     authError,
     isLoggedIn,
+    signUp,
     login,
     logout,
-    checkAuth,
     initializeAuthStateListener,
-    signUp
   };
 });

@@ -11,39 +11,65 @@
         <input type="password" id="password" v-model="password" required />
       </div>
       <button type="submit" :disabled="authStore.loading">
-        {{ authStore.loading ? 'Iniciando...' : 'Iniciar Sesión' }}
+        {{ authStore.loading ? "Iniciando..." : "Iniciar Sesión" }}
       </button>
-      <button @click="$emit('show-register')" class="link-button">Sign up</button>
+
+      <p>
+        ¿No tienes cuenta?
+        <router-link :to="{ name: 'Register' }" class="link-button">Regístrate</router-link>
+      </p>
+
+      <!-- Error de login -->
       <p v-if="authStore.authError" class="error-message">
         Error: {{ authStore.authError }}
       </p>
+
+      <!-- Link para reset de contraseña tras fallo -->
+      <p v-if="authStore.authError && !resetSent" class="error-message">
+        <button @click.prevent="handleResetPassword" class="link-button">
+          Olvidé mi contraseña
+        </button>
+      </p>
+
+      <!-- Mensaje de reset enviado -->
+      <p v-if="resetSent" class="success-message">
+        Si existe esa cuenta, recibirás un email para restablecer tu contraseña.
+      </p>
     </form>
-    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/authStore'; // Importa tu store
+import { ref } from "vue";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "vue-router";
+import { supabase } from "@/supabaseClient";
 
-const emit = defineEmits(['show-register']);
-// Variables locales para los inputs del formulario
-const email = ref('');
-const password = ref('');
+const email = ref("");
+const password = ref("");
+const resetSent = ref(false);
 const authStore = useAuthStore();
+const router = useRouter();
 
-
-// Función para manejar el envío del formulario
-const handleLogin = async () => {
-  // Llama a la acción 'login' del store con las credenciales
+async function handleLogin() {
+  resetSent.value = false;
   await authStore.login({ email: email.value, password: password.value });
+  if (authStore.isLoggedIn) {
+    const redirect = router.currentRoute.value.query.redirect || { name: 'Tasks' };
+    router.push(redirect);
+  }
+}
 
-  // Opcional: Limpiar el formulario si el login fue exitoso
-  // (Aunque normalmente se redirige al usuario, así que no es estrictamente necesario)
-  // if (authStore.isLoggedIn) {
-  //   email.value = '';
-  //   password.value = '';
-  // }
-};
+async function handleResetPassword() {
+  authStore.authError = null;
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.value);
+    if (error) throw error;
+    resetSent.value = true;
+  } catch (err) {
+    authStore.authError = err.message;
+  }
+}
 </script>
 
 <style scoped>
@@ -87,5 +113,22 @@ const handleLogin = async () => {
 .error-message {
   color: red;
   margin-top: 1rem;
+}
+.success-message {
+  color: green;
+  margin-top: 1rem;
+}
+.link-button {
+  background: none;
+  border: none;
+  color: #42b983;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  display: inline;
+}
+.link-button:hover {
+  color: #30a86e;
 }
 </style>
