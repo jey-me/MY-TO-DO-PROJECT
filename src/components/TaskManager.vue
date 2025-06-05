@@ -2,7 +2,7 @@
   <main class="task-manager">
     <h1>Mi Lista de Tareas</h1>
 
-    <section class="add-new-task option-b">
+    <section class="add-new-task">
       <div class="grid-input">
         <input
           v-model="newTaskText"
@@ -241,13 +241,13 @@ h1 {
   overflow-wrap: break-word;
 }
 
-.option-b .grid-input {
+.grid-input {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
 }
 
-.option-b input {
+.input {
   padding: 0.5em;
   background: #333;
   border: 1px solid #555;

@@ -33,7 +33,6 @@ import NavBar from "@/components/NavBar.vue";
 const authStore = useAuthStore();
 const projectStore = useTodoStore();
 const router = useRouter();
-
 const initialAuthCheckCompleted = ref(false);
 
 const handleLogout = async () => {
@@ -50,15 +49,9 @@ onMounted(() => {
     ([session, loading]) => {
       if (!loading) {
         initialAuthCheckCompleted.value = true;
-        console.log(
-          "Initial auth check considered complete. Session:",
-          session
-        );
         unwatch();
       }
     }
   );
 });
 </script>
-
-<style></style>
